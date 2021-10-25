@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trial-app
+  name: trial
 spec:
   replicas: 3
   selector:
@@ -14,7 +14,8 @@ spec:
     spec:
       containers:
       - name: trial
-        image: ghcr.io/thejaysmith/trial:v1
+        image: linuxrobotgeek/observability-trial:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
 ---
@@ -26,6 +27,6 @@ spec:
   selector:
     app: trial
   ports:
-    - port: 8080
+    - port: 8083
       targetPort: 8080
   type: LoadBalancer
