@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, json
 
 from jaeger_client import Config
 from jaeger_client.metrics.prometheus import PrometheusMetricsFactory
@@ -13,13 +13,19 @@ from opentelemetry.sdk.trace.export import (
     ConsoleSpanExporter,
     SimpleExportSpanProcessor,
 )
+# Added this for multiprocessing 
+from prometheus_flask_exporter.multiprocess import GunicornInternalPrometheusMetrics
+# This was missing from the original code
+import logging
 
 trace.set_tracer_provider(TracerProvider())
 trace.get_tracer_provider().add_span_processor(
     SimpleExportSpanProcessor(ConsoleSpanExporter())
 )
 
+# Define the app
 app = Flask(__name__)
+metrics = GunicornInternalPrometheusMetrics(app)
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
 
@@ -68,6 +74,17 @@ def homepage():
 
 
     return jsonify(homepages)
+    
+# Healthcheck status
+@app.route('/status')
+def healthcheck():
+    response = app.response_class(
+            response=json.dumps({"result":"OK - healthy"}),
+            status=200,
+            mimetype='application/json'
+    )
+    app.logger.info('Status request successfull')
+    return response
 
 if __name__ == "__main__":
     app.run(debug=True,)
