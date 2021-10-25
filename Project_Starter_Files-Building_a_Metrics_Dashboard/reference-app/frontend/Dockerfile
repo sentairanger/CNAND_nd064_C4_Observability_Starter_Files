@@ -2,8 +2,18 @@
 # https://hub.docker.com/_/python
 FROM python:3.7-slim
 
+LABEL maintainer="Edgardo Peregrino"
+
 # Copy local code to the container image.
 ENV APP_HOME /app
+
+# Add this section for multiprocessing with prometheus and gunicorn
+ENV APP_HOME /app
+ENV PROMETHEUS_MULTIPROC_DIR /tmp/prometheus-multiproc
+
+RUN rm -rf /tmp/prometheus-multiproc
+RUN mkdir -p /tmp/prometheus-multiproc
+
 WORKDIR $APP_HOME
 COPY . ./
 
