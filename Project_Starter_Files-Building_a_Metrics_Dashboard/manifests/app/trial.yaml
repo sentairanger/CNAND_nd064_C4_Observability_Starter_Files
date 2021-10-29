@@ -1,6 +1,13 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: /metrics
+    prometheus.io/port: trialport
+  labels:
+    name: trial
+    release: prometheus
   name: trial
 spec:
   replicas: 3
@@ -17,16 +24,42 @@ spec:
         image: linuxrobotgeek/observability-trial:latest
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - name: trialport
+          containerPort: 8080
+          protocol: TCP
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: trial-service
+  name: trial
+  labels:
+    app: trial
 spec:
   selector:
     app: trial
   ports:
-    - port: 8083
-      targetPort: 8080
+    - name: trial
+      protocol: TCP
+      port: 8080
+      targetPort: trialport
   type: LoadBalancer
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: trial
+  namespace: monitoring
+  labels:
+    app: trial
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: trial
+  endpoints:
+  - port: trial
+    path: /metrics
+    interval: 15s
+  namespaceSelector:
+    matchNames:
+    - default
