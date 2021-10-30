@@ -13,8 +13,7 @@ from opentelemetry.sdk.trace.export import (
     ConsoleSpanExporter,
     SimpleExportSpanProcessor,
 )
-# Added this for multiprocessing 
-from prometheus_flask_exporter.multiprocess import GunicornInternalPrometheusMetrics
+from prometheus_flask_exporter import PrometheusMetrics
 # This was missing from the original code
 import logging
 
@@ -25,9 +24,28 @@ trace.get_tracer_provider().add_span_processor(
 
 # Define the app
 app = Flask(__name__)
-metrics = GunicornInternalPrometheusMetrics(app)
+metrics = PrometheusMetrics(app)
+
+# static information as metric
+metrics.info('app_info', 'Application info', version='1.0.3')
+
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
+
+# add other default metrics
+
+metrics.register_default(
+    metrics.counter(
+        'by_path_counter', 'Request count by request paths',
+        labels={'path': lambda: request.path}
+    )
+)
+
+# Apply the same metric to all of the endpoints
+endpoint_counter = metrics.counter(
+    'endpoint_counter', 'Request count by endpoints',
+    labels={'endpoint': lambda: request.endpoint}
+)
 
 
 #config = Config(
@@ -59,6 +77,7 @@ def init_tracer(service):
 tracer = init_tracer('first-service')
 
 @app.route('/')
+@endpoint_counter
 def homepage():
     return render_template("main.html")
     with tracer.start_span('get-python-jobs') as span:
