@@ -155,10 +155,10 @@ Description: When port-forwarding the application for testing it turns out that 
 ## Building KPIs for our plan
 *TODO*: Now that we have our SLIs and SLOs, create KPIs to accurately measure these metrics. We will make a dashboard for this, but first write them down here.
 1. Error rate (errors per second and response rate per second)
-2. Uptime
+2. Uptime (Pod uptime and successful requests)
 3. Traffic (successful requests per second/ requests per second)
 4. Latency (response time)
-5. Resource Usage (CPU, RAM usage)
+5. Resource Usage (CPU, RAM usage per pod)
 
 ## Final Dashboard
 *TODO*: Create a Dashboard containing graphs that capture all the metrics of your KPIs and adequately representing your SLIs and SLOs. Include a screenshot of the dashboard here, and write a text description of what graphs are represented in the dashboard.  
